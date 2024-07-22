@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مجوهرات الحسناء الذهبية</title>
+    <style>
+        body {
+            background-color: #800000;
+            color: #fff;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        h1 {
+            font-size: 2em;
+        }
+        .prices {
+            margin: 20px auto;
+            width: 80%;
+            border-collapse: collapse;
+        }
+        .prices th, .prices td {
+            border: 1px solid #fff;
+            padding: 10px;
+        }
+        .prices th {
+            background-color: #b03060;
+        }
+        .prices tr:nth-child(even) {
+            background-color: #b22222;
+        }
+        .prices tr:nth-child(odd) {
+            background-color: #dc143c;
+        }
+        .gold-price {
+            font-size: 1.5em;
+            color: #000;
+        }
+        .gold-oz {
+            font-size: 0.75em;
+            color: #000;
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>مجوهرات الحسناء الذهبية</h1>
+    <p>24752020 - 55334534</p>
+    <div id="gold-oz" class="gold-oz"></div>
+    <!-- TradingView Widget BEGIN -->
+    <div class="tradingview-widget-container">
+        <div class="tradingview-widget-container__widget"></div>
+        <div class="tradingview-widget-copyright">
+            <a href="https://www.tradingview.com/" rel="noopener nofollow" target="_blank">
+                <span class="blue-text">Track all markets on TradingView</span>
+            </a>
+        </div>
+        <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js" async>
+        {
+        "symbol": "OANDA:XAUUSD",
+        "width": 350,
+        "isTransparent": false,
+        "colorTheme": "dark",
+        "locale": "en"
+        }
+        </script>
+    </div>
+    <!-- TradingView Widget END -->
+    <table class="prices">
+        <thead>
+            <tr>
+                <th>القيراط</th>
+                <th>المبيع (دينار كويتي)</th>
+                <th>الشراء (دينار كويتي)</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>24 قيراط</td>
+                <td id="price-24k" class="gold-price"></td>
+                <td id="sell-24k" class="gold-price"></td>
+            </tr>
+            <tr>
+                <td>22 قيراط</td>
+                <td id="price-22k" class="gold-price"></td>
+                <td id="sell-22k" class="gold-price"></td>
+            </tr>
+            <tr>
+                <td>21 قيراط</td>
+                <td id="price-21k" class="gold-price"></td>
+                <td id="sell-21k" class="gold-price"></td>
+            </tr>
+            <tr>
+                <td>18 قيراط</td>
+                <td id="price-18k" class="gold-price"></td>
+                <td id="sell-18k" class="gold-price"></td>
+            </tr>
+        </tbody>
+    </table>
+    <div id="error" style="color: red;"></div>
+
+    <script>
+        const GOLD_API_KEY = '69f30528c69bf1b4fdad4a7e489acee7'; // مفتاح API الخاص بـ Metalprice API
+        const EXCHANGE_API_KEY = '4ee45be8392e67d8da6cf6e9'; // مفتاح API الخاص بسعر الصرف
+
+        async function fetchGoldPrices() {
+            try {
+                // جلب سعر صرف الدولار الأمريكي إلى الدينار الكويتي
+                const exchangeResponse = await fetch(`https://v6.exchangerate-api.com/v6/${EXCHANGE_API_KEY}/latest/USD`);
+                const exchangeData = await exchangeResponse.json();
+                const usdToKWD = exchangeData.conversion_rates.KWD;
+
+                // جلب سعر الذهب من Metalprice API
+                const goldResponse = await fetch(`https://api.metalpriceapi.com/v1/latest?api_key=${GOLD_API_KEY}&base=USD&currencies=XAU`);
+                const goldData = await goldResponse.json();
+                const goldPriceUSD = goldData.rates.XAU;
+
+                if (!goldPriceUSD) throw new Error('Unable to retrieve gold price');
+
+                // إضافة 2415 دولار إلى سعر الأونصة
+                const goldPricePlus2415 = goldPriceUSD + 2415;
+
+                // حساب الأسعار
+                const price24K = (goldPricePlus2415 / 31.10) * usdToKWD;
+                const price22K = (goldPricePlus2415 / 31.10) * 0.9166 * usdToKWD;
+                const price21K = (goldPricePlus2415 / 31.10) * 0.875 * usdToKWD;
+                const price18K = (goldPricePlus2415 / 31.10) * 0.750 * usdToKWD;
+
+                // حساب أسعار الشراء
+                const sell24K = price24K * (1 - 0.025);
+                const sell22K = price22K * (1 - 0.0375);
+                const sell21K = price21K * (1 - 0.04);
+                const sell18K = price18K * (1 - 0.0425);
+
+                // عرض الأسعار
+                document.getElementById('gold-oz').innerText = `سعر الأونصة بالدولار الأمريكي: ${goldPriceUSD.toFixed(2)} $`;
+                document.getElementById('price-24k').innerText = price24K.toFixed(3);
+                document.getElementById('sell-24k').innerText = sell24K.toFixed(3);
+                document.getElementById('price-22k').innerText = price22K.toFixed(3);
+                document.getElementById('sell-22k').innerText = sell22K.toFixed(3);
+                document.getElementById('price-21k').innerText = price21K.toFixed(3);
+                document.getElementById('sell-21k').innerText = sell21K.toFixed(3);
+                document.getElementById('price-18k').innerText = price18K.toFixed(3);
+                document.getElementById('sell-18k').innerText = sell18K.toFixed(3);
+
+            } catch (error) {
+                document.getElementById('error').innerText = 'Error fetching data: ' + error.message;
+            }
+        }
+
+        setInterval(fetchGoldPrices, 30000);
+        window.onload = fetchGoldPrices;
+    </script>
+</body>
+</html>
